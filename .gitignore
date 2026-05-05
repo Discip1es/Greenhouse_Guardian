@@ -1,57 +1,41 @@
 ```
-# Build artifacts
+# Build results
 bin/
 obj/
-*.dll
-*.exe
-*.pdb
-*.so
-*.dylib
-*.jar
-*.war
-*.class
+out/
 
-# Dependencies
-packages/
-node_modules/
-vendor/
-
-# IDE files
+# User-specific files
 .vs/
+.vscode/
 .idea/
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
 
-# OS generated files
-.DS_Store
-Thumbs.db
-ehthumbs.db
-Icon?
-desktop.ini
-
-# Logs
-*.log
-
-# Environment variables
+# Environment specific settings
 .env
 .env.local
 *.env.*
 
-# Test and coverage
-coverage/
-*.coverage
-htmlcov/
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
 
 # Temporary files
 *.tmp
 *.temp
-*~
-```
 
-Wait, I need to reconsider this. Looking at the file changes, only source code files (.cs files) were added, not any build artifacts or temporary files. According to rule 6, if the changes contain only source files and no build artifacts, dependencies, or temp files, the output should be empty.
+# Dependencies
+node_modules/
+packages/
 
-```
+# Test and coverage
+coverage/
+htmlcov/
+*.coverage
 
+# Local configuration
+local.settings.json
+appsettings.Development.json
+appsettings.Production.json
 ```

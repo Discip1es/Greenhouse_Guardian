@@ -1,0 +1,71 @@
+@page "/sensors"
+@inject ApiService ApiService
+
+<MudText Typo="Typo.h5">Sensors Management</MudText>
+
+<MudTable Items="sensors" Hover="true" Dense="true">
+    <HeaderContent>
+        <MudTh>ID</MudTh>
+        <MudTh>Name</MudTh>
+        <MudTh>Type</MudTh>
+        <MudTh>Value</MudTh>
+        <MudTh>Status</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Id</MudTd>
+        <MudTd>@context.Name</MudTd>
+        <MudTd>@context.Type</MudTd>
+        <MudTd>@context.CurrentValue @context.Unit</MudTd>
+        <MudTd>
+            <MudChip T="string" Color="@(context.IsActive ? Color.Success : Color.Default)" Size="Size.Small">
+                @(context.IsActive ? "Active" : "Inactive")
+            </MudChip>
+        </MudTd>
+        <MudTd>
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="@(() => EditSensor(context))" />
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteSensor(context))" />
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+<MudDialogProvider />
+
+@code {
+    private List<SensorViewModel> sensors = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSensorsAsync();
+    }
+
+    private async Task LoadSensorsAsync()
+    {
+        try
+        {
+            sensors = await ApiService.GetSensorsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    private void EditSensor(SensorViewModel sensor)
+    {
+        // TODO: Implement edit dialog
+    }
+
+    private async Task DeleteSensor(SensorViewModel sensor)
+    {
+        try
+        {
+            await ApiService.DeleteSensorAsync(sensor.Id);
+            await LoadSensorsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+}

@@ -1,0 +1,47 @@
+@page "/login"
+@layout MainLayout
+@inject AuthService AuthService
+@inject NavigationManager NavigationManager
+
+<MudCard Elevation="3" Class="max-width-sm mx-auto mt-8">
+    <MudCardContent>
+        <MudText Typo="Typo.h5" Class="text-center mb-4">Login to Greenhouse Guardian</MudText>
+        
+        <MudForm @ref="form" Model="@loginModel">
+            <MudTextField T="string" Label="Email" @bind-Value="loginModel.Email" Required="true" />
+            <MudTextField T="string" Label="Password" @bind-Value="loginModel.Password" InputType="InputType.Password" Required="true" />
+            
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="HandleLogin" Class="mt-4" FullWidth="true">
+                Login
+            </MudButton>
+        </MudForm>
+        
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-4">@errorMessage</MudAlert>
+        }
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private MudForm form = new();
+    private LoginRequest loginModel = new();
+    private string errorMessage = "";
+
+    private async Task HandleLogin()
+    {
+        await form.Validate();
+        if (!form.IsValid)
+            return;
+
+        var success = await AuthService.LoginAsync(loginModel.Email, loginModel.Password);
+        if (success)
+        {
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            errorMessage = "Invalid email or password";
+        }
+    }
+}
