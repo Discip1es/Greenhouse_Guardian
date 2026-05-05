@@ -1,41 +1,62 @@
 ```
-# Build results
-bin/
-obj/
-out/
-
-# User-specific files
-.vs/
-.vscode/
-.idea/
-
-# Environment specific settings
+# Environment
 .env
 .env.local
 *.env.*
 
-# OS generated files
-.DS_Store
-Thumbs.db
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+build/
+target/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.venv.bak/
+pip-log.txt
+pip-selfcheck.json
 
 # Logs
 *.log
 
-# Temporary files
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
 *.tmp
-*.temp
 
-# Dependencies
-node_modules/
-packages/
-
-# Test and coverage
+# Coverage
 coverage/
 htmlcov/
-*.coverage
+.coverage
 
-# Local configuration
-local.settings.json
-appsettings.Development.json
-appsettings.Production.json
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# PyTest
+.pytest_cache/
+
+# GitHub
+.github/
 ```

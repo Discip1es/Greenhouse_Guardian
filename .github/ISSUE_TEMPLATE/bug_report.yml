@@ -1,0 +1,81 @@
+name: 🐛 Bug Report
+description: Сообщить об ошибке в проекте
+title: "[Bug]: "
+labels: ["bug", "priority:medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Спасибо за сообщение об ошибке! Пожалуйста, заполните эту форму максимально подробно.
+  
+  - type: textarea
+    id: description
+    attributes:
+      label: Описание ошибки
+      description: Краткое описание того, что произошло
+      placeholder: Опишите проблему...
+    validations:
+      required: true
+  
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Шаги воспроизведения
+      description: Как воспроизвести ошибку?
+      placeholder: |
+        1. Перейти на страницу '...'
+        2. Нажать кнопку '...'
+        3. Увидеть ошибку
+    validations:
+      required: true
+  
+  - type: textarea
+    id: expected
+    attributes:
+      label: Ожидаемое поведение
+      description: Что должно было произойти?
+      placeholder: Опишите ожидаемый результат...
+    validations:
+      required: true
+  
+  - type: dropdown
+    id: component
+    attributes:
+      label: Компонент
+      description: В каком компоненте произошла ошибка?
+      options:
+        - Backend API
+        - Frontend (Blazor)
+        - Database
+        - Docker/Infrastructure
+        - Device Emulator
+        - Другое
+    validations:
+      required: true
+  
+  - type: input
+    id: environment
+    attributes:
+      label: Окружение
+      description: OS, браузер, версия .NET и т.д.
+      placeholder: Windows 11, Chrome 120, .NET 8.0
+  
+  - type: textarea
+    id: logs
+    attributes:
+      label: Логи и скриншоты
+      description: Приложите логи или скриншоты ошибки
+      render: shell
+  
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Приоритет
+      description: Насколько критична эта ошибка?
+      options:
+        - Low - не влияет на основную функциональность
+        - Medium - влияет, но есть обходной путь
+        - High - серьёзная проблема, нет обходного пути
+        - Critical - блокирует работу системы
+    validations:
+      required: true

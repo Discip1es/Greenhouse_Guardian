@@ -1,0 +1,83 @@
+name: ✨ Feature Request
+description: Предложить новую функцию или улучшение
+title: "[Feature]: "
+labels: ["enhancement", "priority:medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Спасибо за предложение! Пожалуйста, опишите вашу идею максимально подробно.
+  
+  - type: textarea
+    id: problem
+    attributes:
+      label: Проблема
+      description: Какую проблему решает эта функция?
+      placeholder: Я сталкиваюсь с проблемой, когда...
+    validations:
+      required: true
+  
+  - type: textarea
+    id: solution
+    attributes:
+      label: Предлагаемое решение
+      description: Опишите, как должна работать эта функция
+      placeholder: Я предлагаю добавить возможность...
+    validations:
+      required: true
+  
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Альтернативы
+      description: Какие альтернативные решения вы рассматривали?
+      placeholder: Я также думал о...
+  
+  - type: dropdown
+    id: component
+    attributes:
+      label: Компонент
+      description: К какому компоненту относится функция?
+      options:
+        - Backend API
+        - Frontend (Blazor)
+        - Database
+        - Device Emulator
+        - Notifications
+        - Automation Rules
+        - Dashboard/Analytics
+        - Другое
+    validations:
+      required: true
+  
+  - type: textarea
+    id: usecase
+    attributes:
+      label: Пример использования
+      description: Опишите типичный сценарий использования (use case)
+      placeholder: |
+        Как пользователь-агроном, я хочу...
+        Чтобы...
+  
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Приоритет
+      description: Насколько важна эта функция?
+      options:
+        - Nice to have - желательно, но не критично
+        - Medium - полезно для работы
+        - High - значительно улучшит продукт
+        - Critical - необходимо для MVP
+    validations:
+      required: true
+  
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Чек-лист
+      options:
+        - label: Я проверил существующие issue и не нашёл похожих предложений
+          required: true
+        - label: Эта функция соответствует целям проекта Greenhouse Guardian
+          required: true
