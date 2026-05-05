@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: timescale/timescaledb:latest-pg15
+    container_name: greenhouse_postgres
+    environment:
+      POSTGRES_USER: greenhouse_admin
+      POSTGRES_PASSWORD: GreenhouseP@ss2024
+      POSTGRES_DB: greenhouse_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U greenhouse_admin -d greenhouse_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: greenhouse_redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: src/GreenhouseGuardian.API/Dockerfile
+    container_name: greenhouse_api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=greenhouse_db;Username=greenhouse_admin;Password=GreenhouseP@ss2024
+      ConnectionStrings__Redis: redis:6379
+      JwtSettings__SecretKey: GreenhouseGuardianSuperSecretKey2024!@#$%
+      JwtSettings__Issuer: GreenhouseGuardian
+      JwtSettings__Audience: GreenhouseGuardianClient
+      JwtSettings__AccessTokenExpirationMinutes: 30
+      JwtSettings__RefreshTokenExpirationHours: 8
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./src/GreenhouseGuardian.Web
+      dockerfile: Dockerfile
+    container_name: greenhouse_web
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
