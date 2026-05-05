@@ -1,0 +1,106 @@
+name: 📋 Development Task
+description: Создать задачу для разработки
+title: "[Task]: "
+labels: ["development", "priority:medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Шаблон для создания технических задач разработки.
+  
+  - type: textarea
+    id: description
+    attributes:
+      label: Описание задачи
+      description: Подробное описание того, что нужно сделать
+      placeholder: Необходимо реализовать...
+    validations:
+      required: true
+  
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Требования
+      description: Критерии приёмки (Acceptance Criteria)
+      placeholder: |
+        - [ ] Реализован метод X
+        - [ ] Написаны单元测试
+        - [ ] Обновлена документация
+    validations:
+      required: true
+  
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: Милстоун
+      description: К какому этапу относится задача?
+      options:
+        - M1: Архитектура и инфраструктура
+        - M2: Основные сервисы
+        - M3: Real-time и эмуляция
+        - M4: Frontend UI
+        - M5: Релиз и деплой
+    validations:
+      required: true
+  
+  - type: dropdown
+    id: component
+    attributes:
+      label: Компонент
+      description: Какой компонент затрагивается?
+      options:
+        - GreenhouseGuardian.Domain
+        - GreenhouseGuardian.Application
+        - GreenhouseGuardian.Infrastructure
+        - GreenhouseGuardian.API
+        - GreenhouseGuardian.Emulator
+        - GreenhouseGuardian.Web (Blazor)
+        - Database/Migrations
+        - Docker/Infrastructure
+    validations:
+      required: true
+  
+  - type: input
+    id: estimate
+    attributes:
+      label: Оценка (Story Points)
+      description: Оценка сложности в Story Points
+      placeholder: "1, 2, 3, 5, 8, или 13"
+  
+  - type: textarea
+    id: technical_notes
+    attributes:
+      label: Технические заметки
+      description: Дополнительные технические детали, ссылки на документацию
+      render: markdown
+  
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Зависимости
+      description: От каких других задач зависит эта?
+      placeholder: "#123, #456"
+  
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Приоритет
+      description: Приоритет задачи
+      options:
+        - priority:low
+        - priority:medium
+        - priority:high
+        - priority:critical
+    validations:
+      required: true
+  
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Чек-лист выполнения
+      options:
+        - label: Код написан и соответствует стандартам
+        - label: Написаны unit-тесты
+        - label: Пройдено код-ревью
+        - label: Обновлена документация (если требуется)
+        - label: Протестировано локально
