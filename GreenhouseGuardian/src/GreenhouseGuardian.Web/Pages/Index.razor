@@ -1,0 +1,144 @@
+@page "/"
+@inject ApiService ApiService
+@inject TelemetryService TelemetryService
+@implements IAsyncDisposable
+
+<MudGrid Spacing="3">
+    <MudItem xs="12" md="3">
+        <MudCard Elevation="3">
+            <MudCardContent>
+                <MudText Typo="Typo.h6">Total Sensors</MudText>
+                <MudText Typo="Typo.h4" Color="Color.Primary">@stats.TotalSensors</MudText>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="12" md="3">
+        <MudCard Elevation="3">
+            <MudCardContent>
+                <MudText Typo="Typo.h6">Active Alerts</MudText>
+                <MudText Typo="Typo.h4" Color="Color.Warning">@stats.ActiveAlerts</MudText>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="12" md="3">
+        <MudCard Elevation="3">
+            <MudCardContent>
+                <MudText Typo="Typo.h6">Critical Alerts</MudText>
+                <MudText Typo="Typo.h4" Color="Color.Error">@stats.CriticalAlerts</MudText>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="12" md="3">
+        <MudCard Elevation="3">
+            <MudCardContent>
+                <MudText Typo="Typo.h6">Zones</MudText>
+                <MudText Typo="Typo.h4" Color="Color.Info">@stats.ZonesCount</MudText>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+<MudGrid Spacing="3" Class="mt-4">
+    <MudItem xs="12" md="6">
+        <MudCard Elevation="3">
+            <MudCardContent>
+                <MudText Typo="Typo.h6">Average Temperature</MudText>
+                <MudText Typo="Typo.h5">@stats.AverageTemperature.ToString("F1")) °C</MudText>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="12" md="6">
+        <MudCard Elevation="3">
+            <MudCardContent>
+                <MudText Typo="Typo.h6">Average Humidity</MudText>
+                <MudText Typo="Typo.h5">@stats.AverageHumidity.ToString("F1")) %</MudText>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+<MudCard Elevation="3" Class="mt-4">
+    <MudCardContent>
+        <MudText Typo="Typo.h6">Real-time Sensor Values</MudText>
+        <MudTable Items="sensorRows" Dense="true" Hover="true">
+            <HeaderContent>
+                <MudTh>Sensor ID</MudTh>
+                <MudTh>Type</MudTh>
+                <MudTh>Value</MudTh>
+                <MudTh>Status</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.Id</MudTd>
+                <MudTd>@context.Type</MudTd>
+                <MudTd>@context.CurrentValue @context.Unit</MudTd>
+                <MudTd>
+                    <MudChip T="string" Color="@GetStatusColor(context.CurrentValue, context)" Size="Size.Small">
+                        @GetStatusText(context.CurrentValue, context)
+                    </MudChip>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private DashboardStats stats = new();
+    private List<SensorViewModel> sensorRows = new();
+    private bool isConnected;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+        await TelemetryService.StartAsync();
+        TelemetryService.OnDataReceived += OnTelemetryDataReceived;
+    }
+
+    private async Task LoadDataAsync()
+    {
+        try
+        {
+            stats = await ApiService.GetDashboardStatsAsync();
+            sensorRows = await ApiService.GetSensorsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading data: {ex.Message}");
+        }
+    }
+
+    private void OnTelemetryDataReceived()
+    {
+        foreach (var kvp in TelemetryService.SensorValues)
+        {
+            var sensor = sensorRows.FirstOrDefault(s => s.Id == kvp.Key);
+            if (sensor != null)
+            {
+                sensor.CurrentValue = kvp.Value;
+                sensor.LastUpdate = DateTime.Now;
+            }
+        }
+        InvokeAsync(StateHasChanged);
+    }
+
+    private string GetStatusText(decimal value, SensorViewModel sensor)
+    {
+        if (value < sensor.WarningThresholdLow || value > sensor.WarningThresholdHigh)
+            return "Warning";
+        return "Normal";
+    }
+
+    private Color GetStatusColor(decimal value, SensorViewModel sensor)
+    {
+        if (value < sensor.CriticalThresholdLow || value > sensor.CriticalThresholdHigh)
+            return Color.Error;
+        if (value < sensor.WarningThresholdLow || value > sensor.WarningThresholdHigh)
+            return Color.Warning;
+        return Color.Success;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        TelemetryService.OnDataReceived -= OnTelemetryDataReceived;
+        await TelemetryService.StopAsync();
+    }
+}

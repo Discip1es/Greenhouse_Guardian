@@ -1,0 +1,52 @@
+@inherits LayoutComponentBase
+@inject AuthService AuthService
+
+<MudDrawer @bind-Open="drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+    <MudNavMenu>
+        <MudNavLink Href="/" Match="NavLinkMatch.All">Dashboard</MudNavLink>
+        <MudNavLink Href="/sensors">Sensors</MudNavLink>
+        <MudNavLink Href="/actuators">Actuators</MudNavLink>
+        <MudNavLink Href="/zones">Zones</MudNavLink>
+        <MudNavLink Href="/alerts">Alerts</MudNavLink>
+        <MudNavLink Href="/rules">Automation Rules</MudNavLink>
+        <MudNavLink Href="/audit">Audit Log</MudNavLink>
+    </MudNavMenu>
+</MudDrawer>
+
+<MudAppBar Elevation="1">
+    <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleDrawer" />
+    <MudText Typo="Typo.h6">Greenhouse Guardian</MudText>
+    <MudSpacer />
+    @if (AuthService.IsAuthenticated)
+    {
+        <MudText>@AuthService.CurrentUser?.Email</MudText>
+        <MudButton Variant="Variant.Text" OnClick="Logout">Logout</MudButton>
+    }
+    else
+    {
+        <MudButton Variant="Variant.Text" Href="/login">Login</MudButton>
+    }
+</MudAppBar>
+
+<MudMainContent Style="padding-top: 64px;">
+    <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+        @Body
+    </MudContainer>
+</MudMainContent>
+
+@code {
+    private bool drawerOpen = true;
+
+    private void ToggleDrawer()
+    {
+        drawerOpen = !drawerOpen;
+    }
+
+    private void Logout()
+    {
+        AuthService.Logout();
+        NavigationManager.NavigateTo("/login");
+    }
+
+    [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
+}

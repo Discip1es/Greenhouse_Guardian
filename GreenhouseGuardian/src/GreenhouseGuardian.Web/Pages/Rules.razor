@@ -1,0 +1,111 @@
+@page "/rules"
+@inject ApiService ApiService
+
+<MudText Typo="Typo.h5">Automation Rules</MudText>
+
+<MudTable Items="rules" Hover="true">
+    <HeaderContent>
+        <MudTh>Name</MudTh>
+        <MudTh>Sensor</MudTh>
+        <MudTh>Condition</MudTh>
+        <MudTh>Action</MudTh>
+        <MudTh>Status</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Name</MudTd>
+        <MudTd>@(context.SensorName ?? "N/A")</MudTd>
+        <MudTd>@context.ConditionOperator @context.ThresholdValue</MudTd>
+        <MudTd>@context.Action</MudTd>
+        <MudTd>
+            <MudChip T="string" Color="@GetStatusColor(context)" Size="Size.Small">
+                @GetStatusText(context)
+            </MudChip>
+        </MudTd>
+        <MudTd>
+            @if (context.IsActive && !context.IsPaused)
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.Pause" OnClick="@(() => PauseRule(context.Id))" />
+            }
+            else if (context.IsActive)
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" OnClick="@(() => ResumeRule(context.Id))" />
+            }
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteRule(context.Id))" />
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private List<RuleViewModel> rules = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRulesAsync();
+    }
+
+    private async Task LoadRulesAsync()
+    {
+        try
+        {
+            rules = await ApiService.GetRulesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    private async Task PauseRule(int id)
+    {
+        try
+        {
+            await ApiService.PauseRuleAsync(id);
+            await LoadRulesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    private async Task ResumeRule(int id)
+    {
+        try
+        {
+            await ApiService.ResumeRuleAsync(id);
+            await LoadRulesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteRule(int id)
+    {
+        try
+        {
+            await ApiService.DeleteRuleAsync(id);
+            await LoadRulesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    private string GetStatusText(RuleViewModel rule)
+    {
+        if (!rule.IsActive) return "Inactive";
+        if (rule.IsPaused) return "Paused";
+        return "Active";
+    }
+
+    private Color GetStatusColor(RuleViewModel rule)
+    {
+        if (!rule.IsActive) return Color.Default;
+        if (rule.IsPaused) return Color.Warning;
+        return Color.Success;
+    }
+}

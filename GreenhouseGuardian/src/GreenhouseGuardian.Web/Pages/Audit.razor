@@ -1,0 +1,56 @@
+@page "/audit"
+@inject ApiService ApiService
+
+<MudText Typo="Typo.h5">Audit Log</MudText>
+
+<MudTable Items="auditLogs" Hover="true">
+    <HeaderContent>
+        <MudTh>Date/Time</MudTh>
+        <MudTh>User</MudTh>
+        <MudTh>Action</MudTh>
+        <MudTh>Entity Type</MudTh>
+        <MudTh>Entity ID</MudTh>
+        <MudTh>IP Address</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.CreatedAt.ToString("g")</MudTd>
+        <MudTd>@context.UserId</MudTd>
+        <MudTd>@context.Action</MudTd>
+        <MudTd>@context.EntityType</MudTd>
+        <MudTd>@(context.EntityId?.ToString() ?? "N/A")</MudTd>
+        <MudTd>@context.IpAddress</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private List<AuditLogViewModel> auditLogs = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAuditLogsAsync();
+    }
+
+    private async Task LoadAuditLogsAsync()
+    {
+        try
+        {
+            // TODO: Implement API call for audit logs
+            auditLogs = new List<AuditLogViewModel>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+}
+
+public class AuditLogViewModel
+{
+    public long Id { get; set; }
+    public string UserId { get; set; } = string.Empty;
+    public string Action { get; set; } = string.Empty;
+    public string EntityType { get; set; } = string.Empty;
+    public int? EntityId { get; set; }
+    public string IpAddress { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+}
