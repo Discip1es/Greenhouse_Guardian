@@ -7,73 +7,111 @@ namespace GreenhouseGuardian.Infrastructure.Services;
 
 public class CurrentStateCache : ICurrentStateCache
 {
-    private readonly IDatabase _redis;
+    private readonly IDatabase? _redis;
     private readonly string _sensorKeyPrefix = "sensor:current:";
     private readonly string _actuatorKeyPrefix = "actuator:state:";
+    private readonly ConcurrentDictionary<int, decimal> _sensorCache = new();
+    private readonly ConcurrentDictionary<int, ActuatorState> _actuatorCache = new();
 
-    public CurrentStateCache(IConnectionMultiplexer redis)
+    public CurrentStateCache(IConnectionMultiplexer? redis = null)
     {
-        _redis = redis.GetDatabase();
+        _redis = redis?.GetDatabase();
     }
 
     public async Task<IDictionary<int, decimal>> GetAllSensorCurrentValuesAsync()
     {
-        var result = new Dictionary<int, decimal>();
-        
-        // Get all keys with sensor prefix
-        var server = _redis.Multiplexer.GetServer(_redis.Multiplexer.GetEndPoints().First());
-        var keys = server.Keys(pattern: $"{_sensorKeyPrefix}*");
-        
-        foreach (var key in keys)
+        if (_redis != null)
         {
-            var value = await _redis.StringGetAsync(key);
-            if (value.HasValue && int.TryParse(key.ToString().Replace(_sensorKeyPrefix, ""), out var sensorId))
+            var result = new Dictionary<int, decimal>();
+            
+            // Get all keys with sensor prefix
+            var server = _redis.Multiplexer.GetServer(_redis.Multiplexer.GetEndPoints().First());
+            var keys = server.Keys(pattern: $"{_sensorKeyPrefix}*");
+            
+            foreach (var key in keys)
             {
-                result[sensorId] = decimal.Parse(value!);
+                var value = await _redis.StringGetAsync(key);
+                if (value.HasValue && int.TryParse(key.ToString().Replace(_sensorKeyPrefix, ""), out var sensorId))
+                {
+                    result[sensorId] = decimal.Parse(value!);
+                }
             }
+            
+            return result;
         }
         
-        return result;
+        // Fallback to in-memory cache
+        return _sensorCache.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
     }
 
     public async Task<decimal?> GetSensorCurrentValueAsync(int sensorId)
     {
-        var value = await _redis.StringGetAsync($"{_sensorKeyPrefix}{sensorId}");
-        return value.HasValue ? decimal.Parse(value!) : null;
+        if (_redis != null)
+        {
+            var value = await _redis.StringGetAsync($"{_sensorKeyPrefix}{sensorId}");
+            return value.HasValue ? decimal.Parse(value!) : null;
+        }
+        
+        // Fallback to in-memory cache
+        return _sensorCache.TryGetValue(sensorId, out var val) ? val : null;
     }
 
     public async Task SetSensorCurrentValueAsync(int sensorId, decimal value)
     {
-        await _redis.StringSetAsync($"{_sensorKeyPrefix}{sensorId}", value.ToString());
+        if (_redis != null)
+        {
+            await _redis.StringSetAsync($"{_sensorKeyPrefix}{sensorId}", value.ToString());
+        }
+        
+        // Also update in-memory cache
+        _sensorCache[sensorId] = value;
     }
 
     public async Task<Dictionary<int, ActuatorState>> GetAllActuatorStatesAsync()
     {
-        var result = new Dictionary<int, ActuatorState>();
-        
-        var server = _redis.Multiplexer.GetServer(_redis.Multiplexer.GetEndPoints().First());
-        var keys = server.Keys(pattern: $"{_actuatorKeyPrefix}*");
-        
-        foreach (var key in keys)
+        if (_redis != null)
         {
-            var value = await _redis.StringGetAsync(key);
-            if (value.HasValue && int.TryParse(key.ToString().Replace(_actuatorKeyPrefix, ""), out var actuatorId))
+            var result = new Dictionary<int, ActuatorState>();
+            
+            var server = _redis.Multiplexer.GetServer(_redis.Multiplexer.GetEndPoints().First());
+            var keys = server.Keys(pattern: $"{_actuatorKeyPrefix}*");
+            
+            foreach (var key in keys)
             {
-                result[actuatorId] = Enum.Parse<ActuatorState>(value!);
+                var value = await _redis.StringGetAsync(key);
+                if (value.HasValue && int.TryParse(key.ToString().Replace(_actuatorKeyPrefix, ""), out var actuatorId))
+                {
+                    result[actuatorId] = Enum.Parse<ActuatorState>(value!);
+                }
             }
+            
+            return result;
         }
         
-        return result;
+        // Fallback to in-memory cache
+        return _actuatorCache.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
     }
 
     public async Task<ActuatorState?> GetActuatorStateAsync(int actuatorId)
     {
-        var value = await _redis.StringGetAsync($"{_actuatorKeyPrefix}{actuatorId}");
-        return value.HasValue ? Enum.Parse<ActuatorState>(value!) : null;
+        if (_redis != null)
+        {
+            var value = await _redis.StringGetAsync($"{_actuatorKeyPrefix}{actuatorId}");
+            return value.HasValue ? Enum.Parse<ActuatorState>(value!) : null;
+        }
+        
+        // Fallback to in-memory cache
+        return _actuatorCache.TryGetValue(actuatorId, out var state) ? state : null;
     }
 
     public async Task SetActuatorStateAsync(int actuatorId, ActuatorState state)
     {
-        await _redis.StringSetAsync($"{_actuatorKeyPrefix}{actuatorId}", state.ToString());
+        if (_redis != null)
+        {
+            await _redis.StringSetAsync($"{_actuatorKeyPrefix}{actuatorId}", state.ToString());
+        }
+        
+        // Also update in-memory cache
+        _actuatorCache[actuatorId] = state;
     }
 }
