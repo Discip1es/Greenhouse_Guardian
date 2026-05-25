@@ -1,62 +1,52 @@
 ```
-# Environment
-.env
-.env.local
-*.env.*
+# Build and compilation artifacts
+**/bin/
+**/obj/
+**/Debug/
+**/Release/
+*.dll
+*.exe
+*.pdb
+*.so
+*.dylib
+*.o
+*.obj
 
 # Dependencies
+packages/
 node_modules/
+vendor/
 
-# Build artifacts
-dist/
-build/
-target/
+# Test results and coverage
+**/TestResults/
+*.trx
+*.coverage
+coverage/
 
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-.venv/
-.venv.bak/
-pip-log.txt
-pip-selfcheck.json
+# IDE specific
+.vs/
+.vscode/
+.idea/
+*.userprefs
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+._*
 
 # Logs
 *.log
 
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*.tmp
-
-# Coverage
-coverage/
-htmlcov/
-.coverage
-
-# MyPy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# PyTest
-.pytest_cache/
-
-# GitHub
-.github/
+# Environment variables
+.env
+.env.local
+.env.*
+!src/**
+!tests/**
 ```
