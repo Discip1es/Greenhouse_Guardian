@@ -1,0 +1,84 @@
+name: CI Pipeline - Build, Test & Coverage Report
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+    - name: Restore dependencies
+      run: dotnet restore GreenhouseGuardian/GreenhouseGuardian.sln || dotnet restore GreenhouseGuardian/src
+    - name: Build solution
+      run: |
+        # Try to build solution file first, if not found build all projects
+        if [ -f "GreenhouseGuardian/GreenhouseGuardian.sln" ]; then
+          dotnet build GreenhouseGuardian/GreenhouseGuardian.sln --configuration Release --no-restore
+        else
+          dotnet build GreenhouseGuardian/src --configuration Release --no-restore
+        fi
+    - name: Run tests with coverage
+      run: |
+        dotnet test GreenhouseGuardian/tests/GreenhouseGuardian.Tests/GreenhouseGuardian.Tests.csproj \
+          --no-restore \
+          --verbosity normal \
+          --collect:"XPlat Code Coverage" \
+          --results-directory ./test-results \
+          --logger "trx;LogFileName=test-results.trx" \
+          --logger "console;verbosity=detailed" \
+          /p:CollectCoverage=true \
+          /p:CoverletOutputFormat=cobertura \
+          /p:CoverletOutput=./test-results/coverage/
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: ./test-results/test-results.trx
+        retention-days: 7
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: coverage-report
+        path: ./test-results/coverage/*.xml
+        retention-days: 7
+  generate-coverage-report:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Download coverage report
+      uses: actions/download-artifact@v4
+      with:
+        name: coverage-report
+        path: ./coverage-input
+    - name: Download test results
+      uses: actions/download-artifact@v4
+      with:
+        name: test-results
+        path: ./test-results-input
+    - name: Generate HTML Coverage Report
+      run: |
+        # Install reportgenerator tool
+        dotnet tool install -g dotnet-reportgenerator-globaltool || dotnet tool install --tool-path ./tools dotnet-reportgenerator-globaltool
+        # Create output directory
+        mkdir -p ./coverage-report
+        # Generate HTML report from cobertura XML
+        if [ -f "./tools/reportgenerator" ]; then
+          ./tools/reportgenerator \
+            "-reports:./coverage-input/*.xml" \
+            "-targetdir:./coverage-report" \
+            "-reporttypes:Html;HtmlSummary" \
+            "-assemblyfilters:+GreenhouseGuardian.*" \
+            "-classfilters:+*" \
+            "-tag:${{ github.sha }}" \
